@@ -22,8 +22,12 @@
       },
       "edgeToEdgeEnabled": true
     },
+    "scheme": "myapp",
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-secure-store"
+    ]
   }
 }
