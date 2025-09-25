@@ -1,17 +1,17 @@
 import React, { useState, useMemo, useRef } from "react";
-import { 
-  View, 
-  Text, 
-  FlatList, 
-  TouchableOpacity, 
-  StyleSheet, 
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
   ActivityIndicator,
   Animated,
-  Dimensions 
+  Dimensions,
 } from "react-native";
 import useCartStore from "../store/cartStore";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 // Toast Component
 const Toast = ({ message, visible, onHide }) => {
@@ -82,7 +82,9 @@ const generateProducts = () => {
   for (let i = 1; i <= 5000; i++) {
     products.push({
       id: i.toString(),
-      name: `Product ${String.fromCharCode(65 + ((i - 1) % 26))}${Math.floor((i - 1) / 26) + 1}`,
+      name: `Product ${String.fromCharCode(65 + ((i - 1) % 26))}${
+        Math.floor((i - 1) / 26) + 1
+      }`,
       price: Math.floor(Math.random() * 500) + 50,
     });
   }
@@ -98,10 +100,10 @@ export default function ProductListScreen({ navigation }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
+  const [toastMessage, setToastMessage] = useState("");
 
   const allProducts = useMemo(() => generateProducts(), []);
-  
+
   const displayedProducts = useMemo(() => {
     return allProducts.slice(0, currentPage * ITEMS_PER_PAGE);
   }, [allProducts, currentPage]);
@@ -113,10 +115,10 @@ export default function ProductListScreen({ navigation }) {
 
   const loadMore = () => {
     if (isLoading || displayedProducts.length >= allProducts.length) return;
-    
+
     setIsLoading(true);
     setTimeout(() => {
-      setCurrentPage(prev => prev + 1);
+      setCurrentPage((prev) => prev + 1);
       setIsLoading(false);
     }, 500);
   };
@@ -143,7 +145,7 @@ export default function ProductListScreen({ navigation }) {
         <Text style={styles.productName}>{item.name}</Text>
         <Text style={styles.productPrice}>₹{item.price}</Text>
       </View>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.addButton}
         onPress={() => handleAddToCart(item)}
         activeOpacity={0.7}
@@ -166,7 +168,7 @@ export default function ProductListScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Products ({allProducts.length} total)</Text>
-      
+
       <FlatList
         data={displayedProducts}
         keyExtractor={(item) => item.id}
@@ -184,12 +186,13 @@ export default function ProductListScreen({ navigation }) {
       />
 
       <View style={styles.navigationButtons}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.navButton}
           onPress={() => navigation.navigate("Cart")}
           activeOpacity={0.8}
         >
           <View style={styles.cartButtonContent}>
+            <Text style={styles.navButtonIcon}>🛒</Text>
             <Text style={styles.navButtonText}>Go to Cart</Text>
             {cartItemCount > 0 && (
               <View style={styles.cartBadge}>
@@ -198,46 +201,131 @@ export default function ProductListScreen({ navigation }) {
             )}
           </View>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={styles.navButton}
           onPress={() => navigation.navigate("Users")}
           activeOpacity={0.8}
         >
-          <Text style={styles.navButtonText}>Users</Text>
+          <View style={styles.navButtonContent}>
+            <Text style={styles.navButtonIcon}>👥</Text>
+            <Text style={styles.navButtonText}>Users</Text>
+          </View>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={styles.navButton}
           onPress={() => navigation.navigate("SecureToken")}
           activeOpacity={0.8}
         >
-          <Text style={styles.navButtonText}>Secure Token</Text>
+          <View style={styles.navButtonContent}>
+            <Text style={styles.navButtonIcon}>🔐</Text>
+            <Text style={styles.navButtonText}>Secure Token</Text>
+          </View>
         </TouchableOpacity>
       </View>
 
       {/* Toast Message */}
-      <Toast 
-        message={toastMessage}
-        visible={toastVisible}
-        onHide={hideToast}
-      />
+      <Toast message={toastMessage} visible={toastVisible} onHide={hideToast} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    padding: 20,
-    backgroundColor: '#f5f5f5'
+  
+  navigationButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+    gap: 8,
   },
-  title: { 
-    fontSize: 22, 
-    fontWeight: "bold", 
-    marginBottom: 15,
+  navButton: {
+    flex: 1,
+    backgroundColor: '#34C759',
+    paddingVertical: 5,
+    paddingHorizontal: 5,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#34C759',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 4,
+    minHeight: 30,
+    // Gradient-like effect with border
+    borderWidth: 1,
+    borderColor: '#2EBD4E',
+    borderBottomWidth: 3,
+    borderBottomColor: '#080909ff',
+  },
+  navButtonContent: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+  },
+  navButtonIcon: {
+    fontSize: 30,
+    marginBottom: 2,
+  },
+  navButtonText: {
+    color: '#070707ff',
+    fontSize: 12,
+    fontWeight: '700',
     textAlign: 'center',
-    color: '#333'
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
+  },
+  // Enhanced cart button styles
+  cartButtonContent: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    gap: 4,
+  },
+  cartBadge: {
+    position: 'absolute',
+    right: -18,
+    top: -8,
+    backgroundColor: '#FF3B30',
+    borderRadius: 12,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+    shadowColor: '#FF3B30',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  cartBadgeText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: 'bold',
+    paddingHorizontal: 3,
+  },
+  container: {
+    flex: 1,
+    padding: 10,
+    backgroundColor: "#f5f5f5",
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 15,
+    textAlign: "center",
+    color: "#333",
   },
   flatList: {
     flex: 1,
@@ -249,11 +337,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 12,
     borderColor: "#ddd",
-    backgroundColor: '#fff',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    shadowColor: '#000',
+    backgroundColor: "#fff",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 1,
@@ -267,21 +355,21 @@ const styles = StyleSheet.create({
   },
   productName: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
     marginBottom: 4,
   },
   productPrice: {
     fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
+    color: "#666",
+    fontWeight: "500",
   },
   addButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#34C759",
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
-    shadowColor: '#007AFF',
+    shadowColor: "#007AFF",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -291,89 +379,36 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   loadingFooter: {
     padding: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   loadingText: {
     marginTop: 8,
     fontSize: 14,
-    color: '#666',
-  },
-  navigationButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 15,
-    gap: 10,
-  },
-  navButton: {
-    flex: 1,
-    backgroundColor: '#34C759',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    alignItems: 'center',
-    shadowColor: '#34C759',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  navButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  // Cart button with badge styles
-  cartButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  cartBadge: {
-    position: 'absolute',
-    right: -25,
-    top: -18,
-    backgroundColor: '#FF3B30',
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#fff',
-  },
-  cartBadgeText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
-    paddingHorizontal: 4,
+    color: "#666",
   },
   // Toast Styles
   toastContainer: {
-    position: 'absolute',
+    position: "absolute",
     top: 60,
     left: 0,
     right: 0,
-    alignItems: 'center',
+    alignItems: "center",
     zIndex: 1000,
   },
   toast: {
-    backgroundColor: '#333',
+    backgroundColor: "#333",
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 25,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
+    flexDirection: "row",
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 4,
@@ -388,9 +423,9 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   toastText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     flex: 1,
   },
 });
