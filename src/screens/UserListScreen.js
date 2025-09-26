@@ -1,20 +1,24 @@
 import React, { useEffect, useState } from "react";
-import { 
-  View, 
-  Text, 
-  FlatList, 
-  TouchableOpacity, 
-  StyleSheet, 
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
   ActivityIndicator,
   RefreshControl,
-  Alert
+  Alert,
 } from "react-native";
+import NetInfo from "@react-native-community/netinfo";
+import { saveData, getData } from "../utils/storage";
 
 export default function UserListScreen({ navigation }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+  const [isOffline, setIsOffline] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
 
   const fetchUsers = async (isRefresh = false) => {
     try {
@@ -25,23 +29,68 @@ export default function UserListScreen({ navigation }) {
       }
       setError(null);
 
-      const response = await fetch("https://jsonplaceholder.typicode.com/users");
-      
+      // Check network connectivity
+      const netInfo = await NetInfo.fetch();
+      const isConnected = netInfo.isConnected;
+
+      if (!isConnected) {
+        // Load cached data when offline
+        const cachedUsers = await getData("cached_users");
+        if (cachedUsers) {
+          setUsers(cachedUsers);
+          setIsOffline(true);
+          setIsOnline(false);
+          console.log("Loaded cached users (offline mode)");
+        } else {
+          throw new Error(
+            "No internet connection and no cached data available"
+          );
+        }
+        return;
+      }
+
+      // Fetch from API when online
+      const response = await fetch(
+        "https://jsonplaceholder.typicode.com/users"
+      );
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
       setUsers(data);
+
+      // Cache the data for offline use
+      await saveData("cached_users", data);
+      setIsOffline(false);
+      setIsOnline(true);
+      console.log("Users fetched and cached successfully");
     } catch (err) {
-      console.error('Error fetching users:', err);
+      console.error("Error fetching users:", err);
+
+      // Try to load cached data as fallback
+      try {
+        const cachedUsers = await getData("cached_users");
+        if (cachedUsers) {
+          setUsers(cachedUsers);
+          setIsOffline(true);
+          setIsOnline(false);
+          setError("Using cached data (offline mode)");
+          console.log("Falling back to cached users");
+          return;
+        }
+      } catch (cacheError) {
+        console.error("Error loading cached data:", cacheError);
+      }
+
       setError(err.message);
       Alert.alert(
-        'Error',
-        'Failed to load users. Please check your internet connection and try again.',
+        "Error",
+        "Failed to load users. Please check your internet connection and try again.",
         [
-          { text: 'OK' },
-          { text: 'Retry', onPress: () => fetchUsers(isRefresh) }
+          { text: "OK" },
+          { text: "Retry", onPress: () => fetchUsers(isRefresh) },
         ]
       );
     } finally {
@@ -55,10 +104,11 @@ export default function UserListScreen({ navigation }) {
   }, []);
 
   const handleUserPress = (user) => {
-    // Pass both id and userName to fix the navigation title issue
-    navigation.navigate("UserDetail", { 
-      id: user.id, 
-      userName: user.name 
+    // Pass the entire user object to avoid API call when we already have the data
+    navigation.navigate("UserDetail", {
+      id: user.id,
+      userName: user.name,
+      userData: user, // Pass the complete user data
     });
   };
 
@@ -106,7 +156,7 @@ export default function UserListScreen({ navigation }) {
       <Text style={styles.errorIcon}>⚠️</Text>
       <Text style={styles.errorTitle}>Something went wrong</Text>
       <Text style={styles.errorMessage}>{error}</Text>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.retryButton}
         onPress={() => fetchUsers()}
         activeOpacity={0.8}
@@ -129,6 +179,13 @@ export default function UserListScreen({ navigation }) {
       <View style={styles.header}>
         <Text style={styles.title}>Users Directory</Text>
         <Text style={styles.subtitle}>{users.length} users found</Text>
+        {isOffline && (
+          <View style={styles.offlineIndicator}>
+            <Text style={styles.offlineText}>
+              📱 Offline Mode - Showing Cached Data
+            </Text>
+          </View>
+        )}
       </View>
 
       <FlatList
@@ -138,13 +195,13 @@ export default function UserListScreen({ navigation }) {
         showsVerticalScrollIndicator={true}
         contentContainerStyle={[
           styles.listContainer,
-          users.length === 0 && styles.emptyListContainer
+          users.length === 0 && styles.emptyListContainer,
         ]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={['#007AFF']}
+            colors={["#007AFF"]}
             tintColor="#007AFF"
           />
         }
@@ -157,28 +214,28 @@ export default function UserListScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: '#f5f5f5'
+  container: {
+    flex: 1,
+    backgroundColor: "#f5f5f5",
   },
   header: {
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 15,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: "#e0e0e0",
   },
-  title: { 
-    fontSize: 28, 
-    fontWeight: "bold", 
-    color: '#333',
+  title: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#333",
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
-    fontWeight: '500',
+    color: "#666",
+    fontWeight: "500",
   },
   flatList: {
     flex: 1,
@@ -189,15 +246,15 @@ const styles = StyleSheet.create({
   },
   emptyListContainer: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 16,
     borderRadius: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
+    flexDirection: "row",
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -206,42 +263,42 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
     borderWidth: 1,
-    borderColor: '#f0f0f0',
+    borderColor: "#f0f0f0",
   },
   userInfo: {
     flex: 1,
   },
   userName: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
     marginBottom: 4,
   },
   userEmail: {
     fontSize: 14,
-    color: '#007AFF',
+    color: "#007AFF",
     marginBottom: 2,
   },
   userPhone: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginBottom: 4,
   },
   userCompany: {
     fontSize: 12,
-    color: '#888',
-    fontStyle: 'italic',
+    color: "#888",
+    fontStyle: "italic",
   },
   arrowContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     width: 24,
     height: 24,
   },
   arrow: {
     fontSize: 20,
-    color: '#ccc',
-    fontWeight: 'bold',
+    color: "#ccc",
+    fontWeight: "bold",
   },
   separator: {
     height: 10,
@@ -249,18 +306,18 @@ const styles = StyleSheet.create({
   // Loading State
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
   },
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
   // Empty State
   emptyContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 40,
   },
   emptyIcon: {
@@ -269,22 +326,22 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
   },
   // Error State
   errorContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 40,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   errorIcon: {
     fontSize: 64,
@@ -292,24 +349,24 @@ const styles = StyleSheet.create({
   },
   errorTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   errorMessage: {
     fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
     marginBottom: 24,
     lineHeight: 20,
   },
   retryButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
-    shadowColor: '#007AFF',
+    shadowColor: "#007AFF",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -319,8 +376,24 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   retryButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
+  },
+  // Offline Indicator
+  offlineIndicator: {
+    backgroundColor: "#FFF3CD",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: "#FFEAA7",
+  },
+  offlineText: {
+    fontSize: 14,
+    color: "#856404",
+    fontWeight: "500",
+    textAlign: "center",
   },
 });

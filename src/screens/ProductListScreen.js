@@ -223,6 +223,17 @@ export default function ProductListScreen({ navigation }) {
             <Text style={styles.navButtonText}>Secure Token</Text>
           </View>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.navButton}
+          onPress={() => navigation.navigate("DeviceInfo")}
+          activeOpacity={0.8}
+        >
+          <View style={styles.navButtonContent}>
+            <Text style={styles.navButtonIcon}>📱</Text>
+            <Text style={styles.navButtonText}>Device Info</Text>
+          </View>
+        </TouchableOpacity>
       </View>
 
       {/* Toast Message */}
@@ -232,22 +243,21 @@ export default function ProductListScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  
   navigationButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 10,
     gap: 8,
   },
   navButton: {
     flex: 1,
-    backgroundColor: '#34C759',
+    backgroundColor: "#34C759",
     paddingVertical: 5,
     paddingHorizontal: 5,
     borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#34C759',
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#34C759",
     shadowOffset: {
       width: 0,
       height: 3,
@@ -258,14 +268,14 @@ const styles = StyleSheet.create({
     minHeight: 30,
     // Gradient-like effect with border
     borderWidth: 1,
-    borderColor: '#2EBD4E',
+    borderColor: "#2EBD4E",
     borderBottomWidth: 3,
-    borderBottomColor: '#080909ff',
+    borderBottomColor: "#080909ff",
   },
   navButtonContent: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 2,
   },
   navButtonIcon: {
@@ -273,34 +283,34 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   navButtonText: {
-    color: '#070707ff',
+    color: "#070707ff",
     fontSize: 12,
-    fontWeight: '700',
-    textAlign: 'center',
+    fontWeight: "700",
+    textAlign: "center",
     letterSpacing: 0.3,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
   // Enhanced cart button styles
   cartButtonContent: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
     gap: 4,
   },
   cartBadge: {
-    position: 'absolute',
+    position: "absolute",
     right: -18,
     top: -8,
-    backgroundColor: '#FF3B30',
+    backgroundColor: "#FF3B30",
     borderRadius: 12,
     minWidth: 20,
     height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     borderWidth: 2,
-    borderColor: '#fff',
-    shadowColor: '#FF3B30',
+    borderColor: "#fff",
+    shadowColor: "#FF3B30",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -310,9 +320,9 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   cartBadgeText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 11,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     paddingHorizontal: 3,
   },
   container: {

@@ -7,6 +7,7 @@ import CartScreen from "./src/screens/CartScreen";
 import UserListScreen from "./src/screens/UserListScreen";
 import UserDetailScreen from "./src/screens/UserDetailScreen";
 import SecureTokenScreen from "./src/screens/SecureTokenScreen";
+import DeviceInfoScreen from "./src/screens/DeviceInfoScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -28,6 +29,7 @@ export default function App() {
         <Stack.Screen name="Users" component={UserListScreen} />
         <Stack.Screen name="UserDetail" component={UserDetailScreen} />
         <Stack.Screen name="SecureToken" component={SecureTokenScreen} />
+        <Stack.Screen name="DeviceInfo" component={DeviceInfoScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

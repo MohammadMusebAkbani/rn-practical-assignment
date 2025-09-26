@@ -12,7 +12,6 @@ import useCartStore from "../store/cartStore";
 import { saveData, getData } from "../utils/storage";
 
 export default function CartScreen() {
-  // Destructure all needed functions from the store
   const cart = useCartStore((state) => state.cart);
   const removeFromCart = useCartStore((state) => state.removeFromCart);
   const clearCart = useCartStore((state) => state.clearCart);
